@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Würfel-Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Würfel-Simulator</h1>
+    
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="control-panel">
+                <div class="slider-container">
+                    <label class="slider-label">Anzahl Würfel</label>
+                    <div class="slider-input">
+                        <input type="range" id="num-dice-slider" min="1" max="100" value="2">
+                        <input type="number" id="num-dice-input" min="1" max="100" value="2">
+                    </div>
+                </div>
+                
+                <div class="slider-container">
+                    <label class="slider-label">Schwierigkeit</label>
+                    <div class="slider-input">
+                        <input type="range" id="difficulty-slider" min="1" max="10" value="1">
+                        <input type="number" id="difficulty-input" min="1" max="10" value="1">
+                    </div>
+                </div>
+                
+                <div class="button-container">
+                    <button id="roll-button">Würfeln!</button>
+                    <button id="force-button" class="disabled" disabled>Forcieren (-1)</button>
+                </div>
+            </div>
+            
+            <div class="dice-container">
+                <div class="feedback-placeholder">
+                    <div class="feedback-display" id="feedback-display"></div>
+                </div>
+                <div class="dice-display" id="dice-display"></div>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="results" id="results">
+                <h3 id="result-title">Ergebnis des Wurfs:</h3>
+                <div class="result-item result-total-item">Ergebnis: <span id="result">0</span></div>
+                <div class="result-item successes-item">Erfolge (5 und 6): <span id="successes">0</span></div>
+                <div class="result-item ones-item">Patzer (1): <span id="ones">0</span></div>
+                <div class="result-item sum-item">Summe aller Würfel: <span id="total-sum">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dice.js"></script>
+    <script src="ui-controller.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
