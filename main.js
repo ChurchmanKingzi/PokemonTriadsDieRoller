@@ -8,12 +8,18 @@ class DiceSimulator {
         // UI-Controller initialisieren
         this.ui = new UIController();
         
+        // Sound-Controller initialisieren
+        this.soundController = new SoundController();
+        
         // Zustandsvariablen
         this.forceCounter = 1;
         this.currentDiceResults = [];
         this.currentSuccesses = 0;
         this.currentOnes = 0;
         this.currentResult = 0;
+        
+        // Verlaufsarray hinzufügen
+        this.rollHistory = []; // Speichert die letzten 10 Würfe
         
         // Event-Listener initialisieren
         this.initEventListeners();
@@ -30,9 +36,6 @@ class DiceSimulator {
         this.ui.onForceButtonClick(() => this.handleForceButtonClick());
     }
 
-    /**
-     * Behandelt den Klick auf den Würfeln-Button
-     */
     handleRollButtonClick() {
         // Forcieren zurücksetzen
         this.forceCounter = 1;
@@ -41,14 +44,17 @@ class DiceSimulator {
         const numDice = this.ui.getNumDice();
         this.currentDiceResults = DiceEngine.rollDice(numDice);
         
+        // Sound abspielen
+        this.soundController.playDiceSound(numDice);
+        
         // Ergebnisse berechnen
         this.currentSuccesses = DiceEngine.countSuccesses(this.currentDiceResults);
         this.currentOnes = DiceEngine.countOnes(this.currentDiceResults);
         this.currentResult = DiceEngine.calculateResult(this.currentSuccesses, this.currentOnes);
         const totalSum = DiceEngine.calculateTotalSum(this.currentDiceResults);
         
-        // Ergebnisse anzeigen
-        this.ui.displayResults(
+        // Ergebnisse mit Animation anzeigen
+        this.ui.animateAndDisplayResults(
             this.currentDiceResults, 
             this.currentSuccesses, 
             this.currentOnes, 
@@ -58,12 +64,13 @@ class DiceSimulator {
         );
         this.ui.setResultTitle("Ergebnis des Wurfs:");
         
-        // Feedback anzeigen
-        const difficulty = this.ui.getDifficulty();
-        this.ui.displayFeedback(this.currentResult, difficulty);
-
-        // Force-Button zeigen oder verstecken
-        this.ui.toggleForceButton(this.currentResult === 0, this.forceCounter);
+       // Feedback bestimmen und anzeigen
+       const difficulty = this.ui.getDifficulty();
+       const feedbackText = this.ui.getFeedbackText(this.currentResult, difficulty);
+       this.ui.displayFeedback(this.currentResult, difficulty);
+       
+       // Zum Verlauf hinzufügen
+       this.addToHistory(this.currentResult, difficulty, feedbackText, "roll");
     }
 
     /**
@@ -73,6 +80,9 @@ class DiceSimulator {
         // Würfel werfen
         const numDice = this.ui.getNumDice();
         this.currentDiceResults = DiceEngine.rollDice(numDice);
+        
+        // Sound abspielen
+        this.soundController.playDiceSound(numDice);
         
         // Ergebnisse berechnen
         this.currentSuccesses = DiceEngine.countSuccesses(this.currentDiceResults);
@@ -87,8 +97,8 @@ class DiceSimulator {
         
         const totalSum = DiceEngine.calculateTotalSum(this.currentDiceResults);
         
-        // Ergebnisse anzeigen
-        this.ui.displayResults(
+        // Ergebnisse mit Animation anzeigen
+        this.ui.animateAndDisplayResults(
             this.currentDiceResults, 
             this.currentSuccesses, 
             this.currentOnes, 
@@ -98,15 +108,47 @@ class DiceSimulator {
         );
         this.ui.setResultTitle("Ergebnis nach Forcieren:");
         
-        // Feedback anzeigen
+        // Feedback bestimmen und anzeigen
         const difficulty = this.ui.getDifficulty();
+        const feedbackText = this.ui.getFeedbackText(this.currentResult, difficulty);
         this.ui.displayFeedback(this.currentResult, difficulty);
+        
+        // Zum Verlauf hinzufügen
+        this.addToHistory(this.currentResult, difficulty, feedbackText, "force");
         
         // Force-Counter erhöhen für nächstes Forcieren
         this.forceCounter++;
+
+        this.ui.updateForceButtonState(true, this.forceCounter);
+    }
+
+    /**
+     * Fügt einen Wurf zum Verlauf hinzu
+     * @param {number} result - Ergebnis des Wurfs
+     * @param {number} difficulty - Schwierigkeit des Wurfs
+     * @param {string} feedbackText - Feedback-Text (z.B. "Probe bestanden")
+     * @param {string} type - Typ des Wurfs ("roll" oder "force")
+     */
+    addToHistory(result, difficulty, feedbackText, type) {
+        // Neuen Verlaufseintrag erstellen
+        const historyEntry = {
+            result: result,
+            difficulty: difficulty,
+            feedback: feedbackText,
+            type: type,
+            timestamp: new Date()
+        };
         
-        // Force-Button zeigen oder verstecken
-        this.ui.toggleForceButton(this.currentResult === 0, this.forceCounter);
+        // Zum Verlauf hinzufügen (am Anfang, damit die neuesten oben sind)
+        this.rollHistory.unshift(historyEntry);
+        
+        // Auf 10 Einträge beschränken
+        if (this.rollHistory.length > 10) {
+            this.rollHistory.pop();
+        }
+        
+        // Verlauf anzeigen
+        this.ui.updateHistoryDisplay(this.rollHistory);
     }
 }
 
